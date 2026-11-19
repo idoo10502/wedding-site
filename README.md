@@ -18,3 +18,6 @@
 - Vercel: Add New > Project > גרירת התיקייה, Framework: Other.
 
 אחרי שיש כתובת, החליפו ב-`og:image` את `assets/og.jpg` בכתובת מלאה (`https://.../assets/og.jpg`) כדי שתמונה תופיע בוואטסאפ.
+
+## אישורי הגעה אוטומטיים (וואטסאפ + שיחת AI)
+ההוראות המלאות: [`docs/rsvp-automation.md`](docs/rsvp-automation.md). הקוד יושב ב-`api/` (Vercel Functions).
