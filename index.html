@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>עידו ותאיר · החתונה</title>
+<meta name="description" content="עידו ותאיר מתחתנים · יום שני, 28.06.2027 · סופיה, באר שבע">
+<meta property="og:title" content="Ido & Tair · The Wedding Day">
+<meta property="og:description" content="יום שני | כ״ג בסיון התשפ״ז · 28.06.2027 · ״סופיה״, באר שבע">
+<meta property="og:image" content="assets/og.jpg">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#F3EBDF">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Frank+Ruhl+Libre:wght@400;500;700&family=Assistant:wght@300;400;600;700&family=Gveret+Levin&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3EBDF; --paper:rgba(248,242,233,.86); --ink:#3A2A22; --text-soft:#5C463A; --muted:#7D6656;
+  --accent:#8C5E44; --accent-dark:#74492F; --on-accent:#FBF6EF; --rose:#C7948A; --gold:#B08D57;
+  --line:rgba(140,94,68,.28); --hero-text:#FFFDF8;
+  --display:'Pinyon Script',cursive; --serif:'Frank Ruhl Libre',serif; --sans:'Assistant',sans-serif; --hand:'Gveret Levin',cursive;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.locked{overflow:hidden;height:100vh}
+
+/* fixed Jerusalem background (div, not background-attachment, so iOS works) */
+.bg{position:fixed;inset:0;z-index:-2;background:url(assets/jerusalem-bg.jpg) 62% 85%/cover no-repeat}
+.bg::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 70% 32% at 50% 18%,rgba(246,239,229,.85),rgba(246,239,229,0) 100%),linear-gradient(180deg,rgba(243,235,223,.15) 0%,rgba(243,235,223,.05) 45%,rgba(243,235,223,.55) 100%)}
+
+/* ---------- curtain intro ---------- */
+.intro{position:fixed;inset:0;z-index:50;direction:ltr;cursor:pointer}
+.intro .half{position:absolute;top:0;bottom:0;width:50.5%;overflow:hidden;transition:transform 1.6s cubic-bezier(.7,0,.2,1)}
+.intro .half.l{left:0}.intro .half.r{right:0}
+.intro .pic{position:absolute;top:0;bottom:0;width:100vw;max-width:none;background:url(assets/couple-1.jpg) center 40%/cover no-repeat}
+.intro .l .pic{left:0}.intro .r .pic{right:0}
+.intro .shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(30,20,14,0) 45%,rgba(30,20,14,.55) 100%);transition:opacity .8s}
+.intro .cta{position:absolute;left:0;right:0;bottom:max(7vh,calc(env(safe-area-inset-bottom) + 28px));text-align:center;color:var(--hero-text);transition:opacity .6s}
+.intro .cta .n{font-family:var(--display);font-size:clamp(52px,12vw,96px);line-height:1;text-shadow:0 2px 18px rgba(0,0,0,.35)}
+.intro .cta .t{direction:rtl;font-family:var(--sans);font-weight:600;letter-spacing:.18em;font-size:14px;margin-top:14px;opacity:.95}
+.intro .cta .t span{display:inline-block;border:1px solid rgba(255,253,248,.7);border-radius:40px;padding:8px 22px;animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{50%{background:rgba(255,253,248,.18)}}
+.intro.open .l{transform:translateX(-101%)}.intro.open .r{transform:translateX(101%)}
+.intro.open .cta,.intro.open .shade{opacity:0}
+.intro.gone{display:none}
+
+/* ---------- layout ---------- */
+main{position:relative}
+section{padding:0 16px}
+.card{max-width:640px;margin:0 auto;background:var(--paper);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);border:1px solid var(--line);border-radius:4px;padding:44px 26px;text-align:center;position:relative;box-shadow:0 10px 40px rgba(90,60,40,.10)}
+.card::before{content:"";position:absolute;inset:8px;border:1px solid var(--line);border-radius:2px;pointer-events:none}
+.reveal{opacity:0;transform:translateY(24px);transition:opacity 1s ease,transform 1s ease}
+.reveal.in{opacity:1;transform:none}
+
+/* hero (names over Jerusalem) */
+.hero{min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:max(9vh,48px);text-align:center;position:relative}
+.bsd{position:absolute;top:14px;left:18px;font-family:var(--serif);font-size:14px;color:var(--text-soft)}
+.hero .names{font-family:var(--display);color:var(--ink);font-size:clamp(64px,17vw,124px);line-height:1.05;direction:ltr;text-shadow:0 0 28px rgba(248,242,233,.9)}
+.hero .sub{font-family:var(--display);color:var(--accent);font-size:clamp(26px,6vw,36px);direction:ltr;margin-top:2px;text-shadow:0 0 18px rgba(248,242,233,.9)}
+.hero .date{margin-top:18px;font-family:var(--serif);letter-spacing:.32em;font-size:clamp(18px,4.6vw,24px);color:var(--ink);direction:ltr;padding:6px 18px;border-top:1px solid var(--accent);border-bottom:1px solid var(--accent);background:rgba(248,242,233,.55)}
+.scroll{position:absolute;bottom:calc(22px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:26px;height:42px;border:1.5px solid var(--accent);border-radius:14px;background:rgba(248,242,233,.5)}
+.scroll::after{content:"";position:absolute;left:50%;top:8px;width:4px;height:8px;margin-left:-2px;border-radius:2px;background:var(--accent);animation:sc 1.8s infinite}
+@keyframes sc{0%{opacity:0;transform:translateY(0)}40%{opacity:1}100%{opacity:0;transform:translateY(12px)}}
+
+/* invitation details */
+.details{padding-top:8vh;padding-bottom:8vh}
+.blessing{font-family:var(--serif);font-weight:700;font-size:clamp(22px,5.6vw,28px);color:var(--ink)}
+.invite{font-size:clamp(17px,4.4vw,20px);color:var(--text-soft);margin-top:6px}
+.orn{display:block;margin:22px auto;width:170px;height:22px;color:var(--rose)}
+.heb-date{font-family:var(--serif);font-weight:500;font-size:clamp(20px,5vw,25px)}
+.big-date{font-family:var(--display);font-size:clamp(44px,12vw,64px);color:var(--accent);direction:ltr;line-height:1.2;margin:4px 0}
+.label{font-size:14px;letter-spacing:.2em;color:var(--muted);font-weight:600;margin-top:22px}
+.venue{font-family:var(--serif);font-weight:700;font-size:clamp(21px,5.4vw,26px);margin-top:2px}
+.addr{color:var(--text-soft)}
+.times{display:flex;justify-content:center;gap:0;margin-top:26px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.times div{flex:1;padding:14px 6px}
+.times div+div{border-right:1px solid var(--line)}
+.times b{display:block;font-family:var(--serif);font-size:28px;font-weight:500;color:var(--accent);direction:ltr}
+.times span{font-size:15px;color:var(--text-soft)}
+.btns{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:28px}
+.btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--sans);font-weight:600;font-size:17px;text-decoration:none;border-radius:40px;padding:12px 24px;cursor:pointer;border:1.5px solid var(--accent);transition:background .25s,color .25s,transform .2s}
+.btn:active{transform:scale(.97)}
+.btn.solid{background:var(--accent);color:var(--on-accent)}
+.btn.solid:hover{background:var(--accent-dark);border-color:var(--accent-dark)}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.ghost:hover{background:var(--accent);color:var(--on-accent)}
+.btn svg{width:20px;height:20px;flex:none}
+.rsvp-main{font-size:20px;padding:15px 44px;margin-top:30px}
+.parents{display:flex;justify-content:space-around;gap:16px;margin-top:30px;font-size:16px;color:var(--text-soft)}
+.parents b{display:block;font-weight:600;color:var(--muted);font-size:14px;letter-spacing:.12em}
+.closing{font-family:var(--serif);font-weight:700;font-size:21px;margin-top:26px}
+
+/* countdown + photos */
+.count{padding-bottom:9vh}
+.count .card{padding-bottom:36px}
+.hand{font-family:var(--hand);color:var(--accent);font-size:clamp(38px,10vw,54px);line-height:1}
+.cd{display:flex;justify-content:center;gap:clamp(10px,4vw,26px);margin:18px 0 6px;direction:rtl}
+.cd div{min-width:62px}
+.cd b{display:block;font-family:var(--hand);font-weight:400;font-size:clamp(46px,13vw,68px);line-height:1;color:var(--ink)}
+.cd span{font-size:14px;color:var(--muted);letter-spacing:.1em}
+.photos{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:28px}
+.photos figure{aspect-ratio:3/4;overflow:hidden;border-radius:2px;border:6px solid #FBF7F1;box-shadow:0 8px 24px rgba(90,60,40,.18)}
+.photos figure:first-child{transform:rotate(1.6deg)}
+.photos figure:last-child{transform:rotate(-1.6deg);margin-top:26px}
+.photos img{width:100%;height:100%;object-fit:cover;object-position:center 35%;display:block}
+.inv-link{display:inline-block;margin-top:26px;color:var(--accent);font-size:15px;text-decoration:underline;text-underline-offset:4px;cursor:pointer;background:none;border:0;font-family:var(--sans)}
+
+footer{text-align:center;padding:4vh 16px calc(40px + env(safe-area-inset-bottom));font-family:var(--display);font-size:34px;color:var(--ink);direction:ltr;text-shadow:0 0 18px rgba(248,242,233,.95)}
+
+/* ---------- modal ---------- */
+.modal{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(40,28,20,.55)}
+.modal.show{display:flex;animation:fade .3s}
+@keyframes fade{from{opacity:0}}
+.sheet{background:var(--bg);width:100%;max-width:440px;max-height:92vh;overflow:auto;border-radius:6px;padding:30px 24px 26px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.sheet h2{font-family:var(--serif);font-weight:700;font-size:26px;text-align:center}
+.sheet .hint{text-align:center;color:var(--muted);font-size:15px;margin-bottom:18px}
+.x{position:absolute;top:10px;left:12px;background:none;border:0;font-size:28px;line-height:1;color:var(--muted);cursor:pointer;padding:6px}
+.f{margin-top:14px}
+.f label{display:block;font-weight:600;font-size:15px;margin-bottom:6px;color:var(--text-soft)}
+.f input,.f textarea{width:100%;font:inherit;font-size:17px;color:var(--ink);background:#FFFCF7;border:1px solid var(--line);border-radius:4px;padding:11px 12px}
+.f input:focus,.f textarea:focus{outline:2px solid var(--accent);outline-offset:0;border-color:transparent}
+.seg{display:flex;gap:10px}
+.seg label{flex:1;margin:0;text-align:center;border:1.5px solid var(--line);border-radius:40px;padding:11px 8px;cursor:pointer;color:var(--ink);font-weight:600;background:#FFFCF7}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg input:checked+span{color:var(--on-accent)}
+.seg label:has(input:checked){background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.diet button{flex:1;font:inherit;font-weight:600;font-size:16px;border:1.5px solid var(--line);border-radius:40px;padding:11px 8px;cursor:pointer;color:var(--ink);background:#FFFCF7}
+.diet button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.stepper{display:flex;align-items:center;justify-content:center;gap:18px}
+.stepper button{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--accent);background:transparent;color:var(--accent);font-size:24px;cursor:pointer}
+.stepper output{font-family:var(--serif);font-size:30px;min-width:36px;text-align:center}
+.sheet .btn{width:100%;justify-content:center;margin-top:22px;font-size:19px;padding:14px}
+.err{color:#A23B2A;font-size:14px;text-align:center;margin-top:10px;min-height:1em}
+.done{text-align:center;padding:16px 0 6px}
+.done .hand{font-size:52px}
+.inv-sheet{max-width:900px;padding:14px}
+.inv-sheet img{width:100%;display:block;border-radius:3px}
+.hidden{display:none!important}
+
+@media (min-width:760px){
+  .card{padding:56px 54px}
+  .bg{background-position:center 80%}
+  .bg::after{background:radial-gradient(ellipse 42% 30% at 50% 17%,rgba(246,239,229,.93) 30%,rgba(246,239,229,0) 100%),linear-gradient(180deg,rgba(243,235,223,.1),rgba(243,235,223,.45))}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
+</style>
+</head>
+<body class="locked">
+<div class="bg" aria-hidden="true"></div>
+
+<!-- curtain -->
+<div class="intro" id="intro" role="button" tabindex="0" aria-label="פתיחת ההזמנה">
+  <div class="half l"><div class="pic"></div></div>
+  <div class="half r"><div class="pic"></div></div>
+  <div class="shade"></div>
+  <div class="cta">
+    <div class="n">Ido &amp; Tair</div>
+    <div class="t"><span>לחצו לפתיחת ההזמנה</span></div>
+  </div>
+</div>
+
+<main>
+  <header class="hero">
+    <div class="bsd">בס״ד</div>
+    <h1 class="names">Ido &amp; Tair</h1>
+    <div class="sub">The Wedding Day</div>
+    <div class="date">28 . 06 . 2027</div>
+    <a class="scroll" href="#details" aria-label="גללו למטה"></a>
+  </header>
+
+  <section class="details" id="details">
+    <div class="card reveal">
+      <div class="blessing">בשבח והודיה לה׳ יתברך</div>
+      <div class="invite">נרגשים להזמינכם לחגוג עמנו את יום נישואינו</div>
+
+      <svg class="orn" viewBox="0 0 170 22" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M2 11h56M112 11h56"/><path d="M85 3c-6 0-10 4-10 8s4 8 10 8 10-4 10-8-4-8-10-8z"/><circle cx="85" cy="11" r="2.5" fill="currentColor"/><path d="M60 11c4-5 9-5 13 0M110 11c-4-5-9-5-13 0"/></svg>
+
+      <div class="heb-date">יום שני | כ״ג בסיון התשפ״ז</div>
+      <div class="big-date">28.06.2027</div>
+
+      <div class="label">המקום</div>
+      <div class="venue">״סופיה״</div>
+      <div class="addr">יצחק סלמה 1, באר שבע</div>
+
+      <div class="times">
+        <div><b>19:30</b><span>קבלת פנים</span></div>
+        <div><b>20:30</b><span>חופה וקידושין</span></div>
+      </div>
+
+      <button class="btn solid rsvp-main" data-open="rsvp">אישור הגעה</button>
+
+      <div class="btns">
+        <a class="btn ghost" id="waze" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+          ניווט ב-Waze</a>
+        <a class="btn ghost" id="gcal" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>
+          הוספה ליומן</a>
+      </div>
+
+      <div class="closing">נשמח לראותכם</div>
+      <div class="parents">
+        <div><b>הורי הכלה</b>מאיר ומאיה דדון</div>
+        <div><b>הורי החתן</b>אבינועם וגלית אוחיון</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="count">
+    <div class="card reveal">
+      <div class="hand">מחכים לחגוג איתכם</div>
+      <div class="cd" id="cd" aria-live="off">
+        <div><b id="d">0</b><span>ימים</span></div>
+        <div><b id="h">0</b><span>שעות</span></div>
+        <div><b id="m">0</b><span>דקות</span></div>
+        <div><b id="s">0</b><span>שניות</span></div>
+      </div>
+      <div class="photos">
+        <figure><img src="assets/couple-1.jpg" alt="עידו ותאיר" loading="lazy"></figure>
+        <figure><img src="assets/couple-2.jpg" alt="עידו ותאיר" loading="lazy"></figure>
+      </div>
+      <button class="inv-link" data-open="inv">להזמנה המקורית</button>
+    </div>
+  </section>
+
+  <footer>Ido &amp; Tair</footer>
+</main>
+
+<!-- RSVP modal -->
+<div class="modal" id="rsvp" role="dialog" aria-modal="true" aria-labelledby="rsvp-t">
+  <div class="sheet">
+    <button class="x" data-close aria-label="סגירה">×</button>
+    <form id="form" novalidate>
+      <h2 id="rsvp-t">אישור הגעה</h2>
+      <p class="hint">נשמח לדעת אם תגיעו</p>
+      <div class="f"><label for="name">שם מלא</label><input id="name" name="name" autocomplete="name" required></div>
+      <div class="f"><label for="phone">טלפון</label><input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel"></div>
+      <div class="f"><label>מגיעים?</label>
+        <div class="seg">
+          <label><input type="radio" name="attending" value="מגיע/ה" checked><span>מגיעים</span></label>
+          <label><input type="radio" name="attending" value="לא מגיע/ה"><span>לא נוכל להגיע</span></label>
+        </div>
+      </div>
+      <div class="f" id="guestsRow"><label>כמה תהיו?</label>
+        <div class="stepper"><button type="button" id="minus" aria-label="פחות">−</button><output id="guests">1</output><button type="button" id="plus" aria-label="יותר">+</button></div>
+      </div>
+      <div class="f" id="dietRow"><label>העדפת מנה (לא חובה)</label>
+        <div class="seg diet">
+          <button type="button" data-diet="צמחוני" aria-pressed="false">מנה צמחונית</button>
+          <button type="button" data-diet="טבעוני" aria-pressed="false">מנה טבעונית</button>
+        </div>
+      </div>
+      <div class="f"><label for="note">הערה (לא חובה)</label><textarea id="note" name="note" rows="2"></textarea></div>
+      <button class="btn solid" type="submit" id="send">שליחה</button>
+      <div class="err" id="err"></div>
+    </form>
+    <div class="done hidden" id="done">
+      <div class="hand">תודה רבה</div>
+      <p id="doneMsg">קיבלנו את האישור שלכם</p>
+    </div>
+  </div>
+</div>
+
+<!-- invitation modal -->
+<div class="modal" id="inv" role="dialog" aria-modal="true" aria-label="ההזמנה">
+  <div class="sheet inv-sheet"><button class="x" data-close aria-label="סגירה">×</button><img src="assets/invitation.jpg" alt="ההזמנה לחתונה של עידו ותאיר" loading="lazy"></div>
+</div>
+
+<script>
+const CONFIG = {
+  // כתובת ה-Web app של Google Apps Script (מסתיימת ב-/exec). ריק = הטופס לא שומר.
+  rsvpUrl: "https://script.google.com/macros/s/AKfycbwoxmH8pAWkdJe_I55seybybsV4r5aBRakwvWMkOjnEkENanzeVRdGPbiSWCJRWFj0dDA/exec",
+  maxGuests: 2,
+  start: "2027-06-28T19:30:00+03:00",
+  end:   "2027-06-29T01:00:00+03:00",
+  title: "החתונה של עידו ותאיר",
+  venue: "סופיה, יצחק סלמה 1, באר שבע",
+  wazeQuery: "סופיה יצחק סלמה 1 באר שבע"
+};
+
+// curtain
+const intro = document.getElementById('intro');
+function openIntro(){
+  if(intro.classList.contains('open')) return;
+  intro.classList.add('open'); document.body.classList.remove('locked');
+  setTimeout(()=>intro.classList.add('gone'),1700);
+}
+intro.addEventListener('click',openIntro);
+intro.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openIntro();}});
+
+// reveal on scroll
+const io = new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+// links
+const z = d=>d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
+document.getElementById('waze').href = 'https://waze.com/ul?q='+encodeURIComponent(CONFIG.wazeQuery)+'&navigate=yes';
+document.getElementById('gcal').href = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+  +'&text='+encodeURIComponent(CONFIG.title)
+  +'&dates='+z(new Date(CONFIG.start))+'/'+z(new Date(CONFIG.end))
+  +'&location='+encodeURIComponent(CONFIG.venue)
+  +'&details='+encodeURIComponent('קבלת פנים 19:30 | חופה וקידושין 20:30')
+  +'&ctz=Asia/Jerusalem';
+
+// countdown
+const target = new Date(CONFIG.start).getTime();
+const el = id=>document.getElementById(id);
+function tick(){
+  let t = Math.max(0, target-Date.now())/1000;
+  el('d').textContent = Math.floor(t/86400);
+  el('h').textContent = Math.floor(t%86400/3600);
+  el('m').textContent = Math.floor(t%3600/60);
+  el('s').textContent = Math.floor(t%60);
+}
+tick(); setInterval(tick,1000);
+
+// modals
+document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>el(b.dataset.open).classList.add('show')));
+document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m||e.target.closest('[data-close]'))m.classList.remove('show');}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal.show').forEach(m=>m.classList.remove('show'));});
+
+// RSVP form
+let guests = 1, diet = 'לא';
+const dietBtns = document.querySelectorAll('[data-diet]');
+dietBtns.forEach(b=>b.addEventListener('click',()=>{
+  diet = (diet===b.dataset.diet) ? 'לא' : b.dataset.diet;   // לחיצה שנייה מבטלת
+  dietBtns.forEach(x=>x.setAttribute('aria-pressed', x.dataset.diet===diet));
+}));
+const setG = n=>{guests=Math.min(CONFIG.maxGuests,Math.max(1,n));el('guests').textContent=guests;};
+el('plus').onclick=()=>setG(guests+1); el('minus').onclick=()=>setG(guests-1);
+document.querySelectorAll('input[name=attending]').forEach(r=>r.addEventListener('change',()=>{
+  const no = form.attending.value!=='מגיע/ה';
+  el('guestsRow').classList.toggle('hidden', no); el('dietRow').classList.toggle('hidden', no);
+}));
+const form = el('form');
+form.addEventListener('submit', async e=>{
+  e.preventDefault(); el('err').textContent='';
+  const name = form.name.value.trim();
+  if(!name){el('err').textContent='נא למלא שם';form.name.focus();return;}
+  const coming = form.attending.value==='מגיע/ה';
+  const data = new URLSearchParams({name, phone:form.phone.value.trim(), attending:form.attending.value,
+    guests: coming?guests:0, diet: coming?diet:'לא', note:form.note.value.trim(), ts:new Date().toISOString()});
+  const btn = el('send'); btn.disabled=true; btn.textContent='שולחים...';
+  try{
+    if(CONFIG.rsvpUrl) await fetch(CONFIG.rsvpUrl,{method:'POST',mode:'no-cors',body:data});
+    else console.warn('rsvpUrl ריק: האישור לא נשמר');
+    el('doneMsg').textContent = coming ? 'קיבלנו את האישור, נתראה בשמחה' : 'תודה שעדכנתם, נתגעגע';
+    form.classList.add('hidden'); el('done').classList.remove('hidden');
+  }catch(err){
+    el('err').textContent='משהו השתבש, נסו שוב בעוד רגע'; btn.disabled=false; btn.textContent='שליחה';
+  }
+});
+</script>
+</body>
+</html>
