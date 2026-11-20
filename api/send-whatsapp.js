@@ -1,7 +1,7 @@
 // שליחת הזמנה בוואטסאפ לכל מי שעוד לא קיבל
 // תצוגה מקדימה:  /api/send-whatsapp?key=ADMIN_KEY&dry=1
 // שליחה:         /api/send-whatsapp?key=ADMIN_KEY&limit=50
-import { env, json, isAdmin, sheet, wa, updateGuest, firstName, ANSWERED } from './_lib.js';
+import { env, json, isAdmin, sheet, wa, updateGuest, displayName, ANSWERED } from './_lib.js';
 
 export async function GET(req) {
   try {
@@ -12,7 +12,7 @@ export async function GET(req) {
     const { guests } = await sheet('list');
     const todo = guests.filter(g => !ANSWERED.includes(g['סטטוס']) && !g['וואטסאפ נשלח']).slice(0, limit);
 
-    if (q.get('dry') === '1') return json({ wouldSend: todo.length, guests: todo.map(g => g['שם']) });
+    if (q.get('dry') === '1') return json({ wouldSend: todo.length, guests: todo.map(g => g['שם מלא']) });
 
     const sent = [], failed = [];
     for (const g of todo) {
@@ -22,13 +22,13 @@ export async function GET(req) {
           template: {
             name: env('WA_TEMPLATE'),
             language: { code: process.env.WA_LANG || 'he' },
-            components: [{ type: 'body', parameters: [{ type: 'text', text: firstName(g['שם']) }] }],
+            components: [{ type: 'body', parameters: [{ type: 'text', text: displayName(g['שם מלא']) }] }],
           },
         });
         await updateGuest(g['טלפון'], { 'סטטוס': 'נשלח וואטסאפ', 'וואטסאפ נשלח': new Date().toISOString() });
-        sent.push(g['שם']);
+        sent.push(g['שם מלא']);
       } catch (e) {
-        failed.push({ name: g['שם'], error: e.message });
+        failed.push({ name: g['שם מלא'], error: e.message });
       }
     }
     return json({ sent: sent.length, failed });

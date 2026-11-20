@@ -1,10 +1,15 @@
-// Google Apps Script: אישורי הגעה מהאתר + רשימת אורחים לוואטסאפ ולשיחות
-// חייב להיווצר מתוך הגיליון עצמו: תוספים > Apps Script
+// Google Apps Script: אישורי הגעה מהאתר + רשימת המוזמנים לוואטסאפ ולשיחות
+// חייב להיווצר מתוך גיליון אישורי ההגעה: תוספים > Apps Script
 // הגדרה חד-פעמית: Project Settings > Script Properties > הוסיפו SECRET עם מחרוזת אקראית ארוכה
+
+// גיליון "רשימת מוזמנים - חתונה עידו ותאיר" (כל הלשוניות בו נסרקות)
+const GUESTS_SPREADSHEET_ID = '1OtdGZ6wTjv9Fa05SEVq1VLtnA1SY5IKLwUVpilTufV0';
+// עמודות שהמערכת מוסיפה בסוף כל לשונית (אחרי העמודות הקיימות, לא נוגעת בהן)
+const STATUS_HEADERS = ['סטטוס', 'כמות מאושרת', 'מנה', 'ערוץ', 'וואטסאפ נשלח', 'ניסיונות שיחה', 'עודכן', 'הערות'];
+const UNKNOWN_TAB = 'לא ברשימה';
+
 const RSVP_SHEET = 'אישורי הגעה';
 const RSVP_HEADERS = ['תאריך', 'שם', 'טלפון', 'מגיעים', 'כמות', 'הערה', 'צמחוני/טבעוני'];
-const GUESTS_SHEET = 'אורחים';
-const GUEST_HEADERS = ['שם', 'טלפון', 'סטטוס', 'כמות', 'מנה', 'ערוץ', 'וואטסאפ נשלח', 'ניסיונות שיחה', 'עודכן', 'הערות'];
 
 function doPost(e) {
   if (e && e.postData && e.postData.type === 'application/json') return api_(JSON.parse(e.postData.contents));
@@ -20,7 +25,11 @@ function doGet(e) {
 // ---------- טופס האתר ----------
 function handle_(e) {
   try {
-    const sh = sheet_(RSVP_SHEET, RSVP_HEADERS);
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    if (!ss) throw new Error('הסקריפט לא מחובר לגיליון. צרו אותו מתוך הגיליון: תוספים > Apps Script');
+    let sh = ss.getSheetByName(RSVP_SHEET);
+    if (!sh) { sh = ss.insertSheet(RSVP_SHEET); sh.setRightToLeft(true); sh.setFrozenRows(1); }
+    sh.getRange(1, 1, 1, RSVP_HEADERS.length).setValues([RSVP_HEADERS]);
     const p = (e && e.parameter) || {};
     const diet = (p.diet === 'צמחוני' || p.diet === 'טבעוני') ? p.diet : 'לא';
     sh.appendRow([new Date(), p.name || '', p.phone ? "'" + p.phone : '', p.attending || '',
@@ -36,32 +45,37 @@ function api_(b) {
   try {
     const secret = PropertiesService.getScriptProperties().getProperty('SECRET');
     if (!secret || b.secret !== secret) throw new Error('unauthorized');
-    const sh = sheet_(GUESTS_SHEET, GUEST_HEADERS);
-    const values = sh.getDataRange().getValues();
-    const head = values[0];
 
-    if (b.action === 'list') {
-      const guests = values.slice(1).map((r, i) => {
-        const o = { row: i + 2 };
-        head.forEach((h, j) => o[h] = r[j] instanceof Date ? r[j].toISOString() : String(r[j]));
-        return o;
-      }).filter(g => g['טלפון']);
-      return json_({ guests });
+    if (b.action === 'list') return json_({ guests: allGuests_().map(x => x.guest) });
+
+    if (b.action === 'get') {
+      const hit = allGuests_().find(x => norm_(x.guest['טלפון']) === norm_(b.phone));
+      return json_({ guest: hit ? hit.guest : null });
     }
 
     if (b.action === 'update') {
       const key = norm_(b.phone);
-      let row = values.findIndex((r, i) => i > 0 && norm_(r[head.indexOf('טלפון')]) === key) + 1;
-      if (row === 0) { // מספר שלא ברשימה: מוסיפים שורה
-        sh.appendRow(head.map(h => h === 'טלפון' ? "'" + b.phone : (h === 'שם' ? (b.name || '') : '')));
-        row = sh.getLastRow();
+      const hits = allGuests_().filter(x => norm_(x.guest['טלפון']) === key);
+      if (!hits.length) { // מספר שלא ברשימה: נכנס ללשונית "לא ברשימה"
+        const ss = SpreadsheetApp.openById(GUESTS_SPREADSHEET_ID);
+        let sh = ss.getSheetByName(UNKNOWN_TAB);
+        if (!sh) {
+          sh = ss.insertSheet(UNKNOWN_TAB);
+          sh.setRightToLeft(true);
+          sh.getRange(1, 1, 1, 4).setValues([['שם מלא', 'טלפון', 'קירבה', 'מוזמנים']]);
+        }
+        sh.appendRow([b.name || '', "'" + b.phone, 'לא ברשימה', 1]);
+        const head = ensureHeaders_(sh);
+        hits.push({ sh, row: sh.getLastRow(), head });
       }
       const fields = Object.assign({}, b.fields, { 'עודכן': new Date() });
-      Object.keys(fields).forEach(h => {
-        const c = head.indexOf(h);
-        if (c >= 0) sh.getRange(row, c + 1).setValue(fields[h]);
+      hits.forEach(({ sh, row, head }) => {
+        Object.keys(fields).forEach(h => {
+          const c = head.indexOf(h);
+          if (c >= 0 && STATUS_HEADERS.includes(h)) sh.getRange(row, c + 1).setValue(fields[h]);
+        });
       });
-      return json_({ ok: true, row });
+      return json_({ ok: true, updated: hits.length });
     }
     throw new Error('unknown action');
   } catch (err) {
@@ -69,17 +83,33 @@ function api_(b) {
   }
 }
 
-function sheet_(name, headers) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  if (!ss) throw new Error('הסקריפט לא מחובר לגיליון. צרו אותו מתוך הגיליון: תוספים > Apps Script');
-  let sh = ss.getSheetByName(name);
-  if (!sh) {
-    sh = ss.insertSheet(name);
-    sh.setRightToLeft(true);
-    sh.setFrozenRows(1);
+// כל השורות עם טלפון, מכל הלשוניות שיש בהן "שם מלא" ו"טלפון"
+function allGuests_() {
+  const out = [];
+  SpreadsheetApp.openById(GUESTS_SPREADSHEET_ID).getSheets().forEach(sh => {
+    if (sh.getLastRow() < 2) return;
+    const firstRow = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(h => String(h).trim());
+    if (!firstRow.includes('שם מלא') || !firstRow.includes('טלפון')) return;
+    const head = ensureHeaders_(sh);
+    const values = sh.getRange(2, 1, sh.getLastRow() - 1, head.length).getValues();
+    values.forEach((r, i) => {
+      const guest = { 'לשונית': sh.getName(), row: i + 2 };
+      head.forEach((h, j) => { if (h) guest[h] = r[j] instanceof Date ? r[j].toISOString() : String(r[j]).trim(); });
+      if (guest['טלפון']) out.push({ sh, row: i + 2, head, guest });
+    });
+  });
+  return out;
+}
+
+// מוסיף את עמודות הסטטוס שחסרות, אחרי העמודה האחרונה
+function ensureHeaders_(sh) {
+  let head = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0].map(h => String(h).trim());
+  const missing = STATUS_HEADERS.filter(h => !head.includes(h));
+  if (missing.length) {
+    sh.getRange(1, head.length + 1, 1, missing.length).setValues([missing]).setFontWeight('bold');
+    head = head.concat(missing);
   }
-  sh.getRange(1, 1, 1, headers.length).setValues([headers]);
-  return sh;
+  return head;
 }
 
 function norm_(p) {
@@ -91,4 +121,10 @@ function norm_(p) {
 
 function json_(o) {
   return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
+}
+
+// להרצה ידנית מהעורך (Run): מאשר הרשאות ובודק שרשימת המוזמנים נקראת
+function testGuests() {
+  const g = allGuests_().map(x => x.guest);
+  Logger.log('אורחים עם טלפון: ' + g.length + ' | לדוגמה: ' + (g[0] ? g[0]['שם מלא'] + ' ' + g[0]['טלפון'] : '-'));
 }

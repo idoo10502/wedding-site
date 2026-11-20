@@ -3,7 +3,7 @@
 // התקשרות:       /api/call-pending?key=ADMIN_KEY&limit=10
 // פרמטרים: hours=48 (כמה זמן לחכות אחרי הוואטסאפ), max=3 (ניסיונות לאורח),
 //          all=1 (גם למי שלא קיבל וואטסאפ), force=1 (התעלמות מחלון השעות)
-import { env, json, isAdmin, sheet, updateGuest, toIntl, firstName, callWindowOpen, ANSWERED } from './_lib.js';
+import { env, json, isAdmin, sheet, updateGuest, toIntl, displayName, invitedOf, callWindowOpen, ANSWERED } from './_lib.js';
 
 export async function GET(req) {
   try {
@@ -28,7 +28,7 @@ export async function GET(req) {
       return sentAt <= cutoff;
     }).slice(0, limit);
 
-    if (dry) return json({ wouldCall: todo.length, guests: todo.map(g => g['שם']) });
+    if (dry) return json({ wouldCall: todo.length, guests: todo.map(g => g['שם מלא']) });
 
     const called = [], failed = [];
     for (const g of todo) {
@@ -42,16 +42,16 @@ export async function GET(req) {
             agent_phone_number_id: env('ELEVEN_PHONE_ID'),
             to_number: '+' + intl,
             conversation_initiation_client_data: {
-              dynamic_variables: { guest_name: firstName(g['שם']), guest_phone: intl },
+              dynamic_variables: { guest_name: displayName(g['שם מלא']), guest_invited: invitedOf(g), guest_phone: intl },
             },
           }),
         });
         const j = await r.json().catch(() => ({}));
         if (!r.ok || j.success === false) throw new Error(j.message || j.detail?.message || JSON.stringify(j.detail || r.status));
         await updateGuest(g['טלפון'], { 'ניסיונות שיחה': (Number(g['ניסיונות שיחה']) || 0) + 1 });
-        called.push(g['שם']);
+        called.push(g['שם מלא']);
       } catch (e) {
-        failed.push({ name: g['שם'], error: e.message });
+        failed.push({ name: g['שם מלא'], error: e.message });
       }
     }
     return json({ called: called.length, failed });

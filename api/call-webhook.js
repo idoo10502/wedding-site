@@ -34,7 +34,8 @@ export async function POST(req) {
   try {
     if (status) {
       const fields = { 'סטטוס': status, 'ערוץ': 'שיחה', 'הערות': summary.slice(0, 500) };
-      fields['כמות'] = status === 'מגיעים' ? Math.max(1, Number(val('guests')) || 1) : 0;
+      const invited = Math.max(1, Number(vars.guest_invited) || 1);
+      fields['כמות מאושרת'] = status === 'מגיעים' ? Math.min(invited, Math.max(1, Number(val('guests')) || 1)) : 0;
       if (status === 'מגיעים' && DIETS.includes(val('diet'))) fields['מנה'] = val('diet');
       await updateGuest(phone, fields);
     } else {

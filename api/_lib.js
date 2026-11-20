@@ -23,7 +23,8 @@ export const toIntl = (p) => {
   return d;
 };
 
-export const firstName = (n) => String(n || '').trim().split(/\s+/)[0] || 'אורח/ת יקר/ה';
+export const displayName = (n) => String(n || '').trim() || 'אורחים יקרים';
+export const invitedOf = (g) => Math.max(1, Number(g?.['מוזמנים']) || 1);
 
 // ---------- Google Sheets (דרך ה-Apps Script) ----------
 export async function sheet(action, payload = {}) {
@@ -41,6 +42,7 @@ export async function sheet(action, payload = {}) {
 }
 
 export const updateGuest = (phone, fields, name) => sheet('update', { phone: String(phone), name, fields });
+export const getGuest = async (phone) => (await sheet('get', { phone: String(phone) })).guest;
 
 // ---------- WhatsApp Cloud API ----------
 export async function wa(to, body) {
@@ -55,6 +57,15 @@ export async function wa(to, body) {
 }
 
 export const waText = (to, text) => wa(to, { type: 'text', text: { body: text } });
+
+export const waList = (to, text, button, rows) => wa(to, {
+  type: 'interactive',
+  interactive: {
+    type: 'list',
+    body: { text },
+    action: { button, sections: [{ title: button, rows: rows.map(([id, title]) => ({ id, title })) }] },
+  },
+});
 
 export const waButtons = (to, text, buttons) => wa(to, {
   type: 'interactive',

@@ -1,12 +1,9 @@
-// Webhook של וואטסאפ: מקבל את תשובות האורחים ומעדכן את הגיליון
-import { env, json, hmacHex, safeEq, updateGuest, waButtons, waText } from './_lib.js';
+// Webhook של וואטסאפ: מקבל את תשובות האורחים ומעדכן את רשימת המוזמנים
+import { env, hmacHex, safeEq, updateGuest, getGuest, invitedOf, waButtons, waList, waText } from './_lib.js';
 
 // הכפתורים בתבנית (חייבים להיות זהים לטקסט בתבנית ב-Meta)
-const TEMPLATE_REPLIES = {
-  'מגיע/ה לבד': { 'סטטוס': 'מגיעים', 'כמות': 1 },
-  'מגיעים זוג': { 'סטטוס': 'מגיעים', 'כמות': 2 },
-  'לא נוכל להגיע': { 'סטטוס': 'לא מגיעים', 'כמות': 0 },
-};
+const YES = 'מגיעים';
+const NO = 'לא נוכל להגיע';
 const DIETS = { 'diet:regular': 'רגילה', 'diet:veg': 'צמחונית', 'diet:vegan': 'טבעונית' };
 
 // אימות ה-Webhook מול Meta
@@ -39,31 +36,47 @@ export async function POST(req) {
   return new Response('ok'); // תמיד 200, אחרת Meta שולח שוב
 }
 
+const askDiet = (to, n) => waButtons(to,
+  n > 1 ? 'מעולה, נתראה בשמחה. צריך מנה מיוחדת?' : 'מעולה, נתראה בשמחה. איזו מנה תרצו?',
+  [['diet:regular', 'רגילה'], ['diet:veg', 'צמחונית'], ['diet:vegan', 'טבעונית']]);
+
 async function handle(m, profileName) {
   const from = m.from;
-  const reply =
+  const reply = String(
     m.type === 'button' ? m.button?.text :
-    m.type === 'interactive' ? m.interactive?.button_reply?.id :
-    m.type === 'text' ? m.text?.body : '';
+    m.type === 'interactive' ? (m.interactive?.button_reply?.id || m.interactive?.list_reply?.id) :
+    m.type === 'text' ? m.text?.body : ''
+  ).trim();
   if (!reply) return;
 
-  const t = TEMPLATE_REPLIES[reply.trim()];
-  if (t) {
-    await updateGuest(from, { ...t, 'ערוץ': 'וואטסאפ' }, profileName);
-    if (t['סטטוס'] === 'מגיעים') {
-      await waButtons(from, 'איזה כיף, נתראה בשמחה. איזו מנה תרצו?', [
-        ['diet:regular', 'רגילה'], ['diet:veg', 'צמחונית'], ['diet:vegan', 'טבעונית'],
-      ]);
-    } else {
-      await waText(from, 'תודה שעדכנתם, נתגעגע.');
+  if (reply === YES) {
+    const invited = invitedOf(await getGuest(from));
+    if (invited === 1) {
+      await updateGuest(from, { 'סטטוס': 'מגיעים', 'כמות מאושרת': 1, 'ערוץ': 'וואטסאפ' }, profileName);
+      return askDiet(from, 1);
     }
-    return;
+    await updateGuest(from, { 'סטטוס': 'מגיעים', 'כמות מאושרת': invited, 'ערוץ': 'וואטסאפ' }, profileName);
+    const n = Math.min(invited, 10);
+    const rows = Array.from({ length: n }, (_, i) => [`count:${i + 1}`, i === 0 ? 'אחד/ת' : `${i + 1}`]);
+    return waList(from, `כמה תהיו? (הוזמנתם ${invited})`, 'בחירת כמות', rows);
   }
+
+  if (reply === NO) {
+    await updateGuest(from, { 'סטטוס': 'לא מגיעים', 'כמות מאושרת': 0, 'ערוץ': 'וואטסאפ' }, profileName);
+    return waText(from, 'תודה שעדכנתם, נתגעגע.');
+  }
+
+  if (reply.startsWith('count:')) {
+    const n = Math.max(1, Number(reply.slice(6)) || 1);
+    await updateGuest(from, { 'כמות מאושרת': n });
+    return askDiet(from, n);
+  }
+
   if (DIETS[reply]) {
     await updateGuest(from, { 'מנה': DIETS[reply] });
-    await waText(from, 'רשמנו. תודה ונתראה ב-28.06 בסופיה, באר שבע.');
-    return;
+    return waText(from, 'רשמנו. תודה ונתראה ב-28.06 בסופיה, באר שבע. אם יש עוד משהו (למשל כמה מנות טבעוניות), כתבו כאן.');
   }
+
   // טקסט חופשי: נשמר בהערות, בלי מענה אוטומטי
-  await updateGuest(from, { 'הערות': String(reply).slice(0, 500) }, profileName);
+  await updateGuest(from, { 'הערות': reply.slice(0, 500) }, profileName);
 }
