@@ -46,7 +46,7 @@ export const getGuest = async (phone) => (await sheet('get', { phone: String(pho
 
 // ---------- WhatsApp Cloud API ----------
 export async function wa(to, body) {
-  const r = await fetch(`https://graph.facebook.com/v21.0/${env('WA_PHONE_ID')}/messages`, {
+  const r = await fetch(`https://graph.facebook.com/${process.env.WA_API_VERSION || 'v25.0'}/${env('WA_PHONE_ID')}/messages`, {
     method: 'POST',
     headers: { Authorization: 'Bearer ' + env('WA_TOKEN'), 'Content-Type': 'application/json' },
     body: JSON.stringify({ messaging_product: 'whatsapp', to: toIntl(to), ...body }),
