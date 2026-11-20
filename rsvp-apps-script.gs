@@ -34,7 +34,9 @@ function handle_(e) {
     const diet = (p.diet === 'צמחוני' || p.diet === 'טבעוני') ? p.diet : 'לא';
     sh.appendRow([new Date(), p.name || '', p.phone ? "'" + p.phone : '', p.attending || '',
                   Number(p.guests || 0), p.note || '', diet]);
-    return ContentService.createTextOutput('ok: נשמר');
+    let synced = '';
+    try { synced = syncFromSite_(p, diet); } catch (err) { synced = ' (סנכרון לרשימה נכשל: ' + err.message + ')'; }
+    return ContentService.createTextOutput('ok: נשמר' + synced);
   } catch (err) {
     return ContentService.createTextOutput('error: ' + err.message);
   }
@@ -53,34 +55,53 @@ function api_(b) {
       return json_({ guest: hit ? hit.guest : null });
     }
 
-    if (b.action === 'update') {
-      const key = norm_(b.phone);
-      const hits = allGuests_().filter(x => norm_(x.guest['טלפון']) === key);
-      if (!hits.length) { // מספר שלא ברשימה: נכנס ללשונית "לא ברשימה"
-        const ss = SpreadsheetApp.openById(GUESTS_SPREADSHEET_ID);
-        let sh = ss.getSheetByName(UNKNOWN_TAB);
-        if (!sh) {
-          sh = ss.insertSheet(UNKNOWN_TAB);
-          sh.setRightToLeft(true);
-          sh.getRange(1, 1, 1, 4).setValues([['שם מלא', 'טלפון', 'קירבה', 'מוזמנים']]);
-        }
-        sh.appendRow([b.name || '', "'" + b.phone, 'לא ברשימה', 1]);
-        const head = ensureHeaders_(sh);
-        hits.push({ sh, row: sh.getLastRow(), head });
-      }
-      const fields = Object.assign({}, b.fields, { 'עודכן': new Date() });
-      hits.forEach(({ sh, row, head }) => {
-        Object.keys(fields).forEach(h => {
-          const c = head.indexOf(h);
-          if (c >= 0 && STATUS_HEADERS.includes(h)) sh.getRange(row, c + 1).setValue(fields[h]);
-        });
-      });
-      return json_({ ok: true, updated: hits.length });
-    }
+    if (b.action === 'update') return json_(updateGuest_(b.phone, b.fields, b.name, true));
     throw new Error('unknown action');
   } catch (err) {
     return json_({ error: err.message });
   }
+}
+
+// אישור מהאתר עם טלפון: מסמן גם ברשימת המוזמנים, כדי שלא יקבל וואטסאפ ושיחה
+function syncFromSite_(p, diet) {
+  if (!p.phone || norm_(p.phone).length < 11) return '';
+  const coming = p.attending === 'מגיע/ה';
+  const fields = {
+    'סטטוס': coming ? 'מגיעים' : 'לא מגיעים',
+    'כמות מאושרת': coming ? Math.max(1, Number(p.guests) || 1) : 0,
+    'ערוץ': 'אתר',
+  };
+  if (coming) fields['מנה'] = diet === 'צמחוני' ? 'צמחונית' : diet === 'טבעוני' ? 'טבעונית' : 'רגילה';
+  if (p.note) fields['הערות'] = String(p.note).slice(0, 500);
+  const r = updateGuest_(p.phone, fields, p.name, false);
+  return r.updated ? ' + עודכן ברשימת המוזמנים' : ' (הטלפון לא נמצא ברשימת המוזמנים)';
+}
+
+function updateGuest_(phone, fieldsIn, name, createIfMissing) {
+    const key = norm_(phone);
+    const hits = allGuests_().filter(x => norm_(x.guest['טלפון']) === key);
+    if (!hits.length && !createIfMissing) return { ok: true, updated: 0 };
+    if (!hits.length) { // מספר שלא ברשימה: נכנס ללשונית "לא ברשימה"
+      const ss = SpreadsheetApp.openById(GUESTS_SPREADSHEET_ID);
+      let sh = ss.getSheetByName(UNKNOWN_TAB);
+      if (!sh) {
+        sh = ss.insertSheet(UNKNOWN_TAB);
+        sh.setRightToLeft(true);
+        sh.getRange(1, 1, 1, 4).setValues([['שם מלא', 'טלפון', 'קירבה', 'מוזמנים']]);
+      }
+      const local = key.startsWith('972') ? '0' + key.slice(3) : key;
+    sh.appendRow([name || '', "'" + local, 'לא ברשימה', 1]);
+      const head = ensureHeaders_(sh);
+      hits.push({ sh, row: sh.getLastRow(), head });
+    }
+    const fields = Object.assign({}, fieldsIn, { 'עודכן': new Date() });
+    hits.forEach(({ sh, row, head }) => {
+      Object.keys(fields).forEach(h => {
+        const c = head.indexOf(h);
+        if (c >= 0 && STATUS_HEADERS.includes(h)) sh.getRange(row, c + 1).setValue(fields[h]);
+      });
+    });
+    return { ok: true, updated: hits.length };
 }
 
 // כל השורות עם טלפון, מכל הלשוניות שיש בהן "שם מלא" ו"טלפון"
