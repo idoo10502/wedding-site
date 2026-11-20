@@ -1,7 +1,8 @@
 // שליחת הזמנה בוואטסאפ לכל מי שעוד לא קיבל
 // תצוגה מקדימה:  /api/send-whatsapp?key=ADMIN_KEY&dry=1
 // שליחה:         /api/send-whatsapp?key=ADMIN_KEY&limit=50
-import { env, json, isAdmin, sheet, wa, updateGuest, displayName, ANSWERED } from './_lib.js';
+// בדיקה על מספר אחד בלבד: /api/send-whatsapp?key=ADMIN_KEY&only=0501234567
+import { env, json, isAdmin, sheet, wa, updateGuest, displayName, toIntl, ANSWERED } from './_lib.js';
 
 export async function GET(req) {
   try {
@@ -10,7 +11,10 @@ export async function GET(req) {
     const limit = Math.min(Number(q.get('limit')) || 50, 200);
 
     const { guests } = await sheet('list');
-    const todo = guests.filter(g => !ANSWERED.includes(g['סטטוס']) && !g['וואטסאפ נשלח']).slice(0, limit);
+    const only = q.get('only') ? toIntl(q.get('only')) : '';
+    const todo = only
+      ? guests.filter(g => toIntl(g['טלפון']) === only)          // בדיקה: רק המספר הזה, גם אם כבר נשלח
+      : guests.filter(g => !ANSWERED.includes(g['סטטוס']) && !g['וואטסאפ נשלח']).slice(0, limit);
 
     if (q.get('dry') === '1') return json({ wouldSend: todo.length, guests: todo.map(g => g['שם מלא']) });
 
