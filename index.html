@@ -235,7 +235,7 @@ footer{text-align:center;padding:4vh 16px calc(40px + env(safe-area-inset-bottom
       <h2 id="rsvp-t">אישור הגעה</h2>
       <p class="hint">נשמח לדעת אם תגיעו</p>
       <div class="f"><label for="name">שם מלא</label><input id="name" name="name" autocomplete="name" required></div>
-      <div class="f"><label for="phone">טלפון</label><input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel"></div>
+      <div class="f"><label for="phone">טלפון</label><input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required placeholder="050-0000000"></div>
       <div class="f"><label>מגיעים?</label>
         <div class="seg">
           <label><input type="radio" name="attending" value="מגיע/ה" checked><span>מגיעים</span></label>
@@ -338,6 +338,8 @@ form.addEventListener('submit', async e=>{
   e.preventDefault(); el('err').textContent='';
   const name = form.name.value.trim();
   if(!name){el('err').textContent='נא למלא שם';form.name.focus();return;}
+  const ph = form.phone.value.replace(/\D/g,'').replace(/^972/,'0');
+  if(!/^0\d{8,9}$/.test(ph)){el('err').textContent='נא למלא מספר טלפון תקין';form.phone.focus();return;}
   const coming = form.attending.value==='מגיע/ה';
   const data = new URLSearchParams({name, phone:form.phone.value.trim(), attending:form.attending.value,
     guests: coming?guests:0, diet: coming?diet:'לא', note:form.note.value.trim(), ts:new Date().toISOString()});
