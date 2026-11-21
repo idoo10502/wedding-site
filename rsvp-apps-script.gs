@@ -98,9 +98,15 @@ function updateGuest_(phone, fieldsIn, name, createIfMissing) {
   if (!row) {
     const g = guestRows_().find(x => norm_(x.phone) === key);
     if (!g && !createIfMissing) return { ok: true, updated: 0 };
-    const local = key.startsWith('972') ? '0' + key.slice(3) : key;
-    sh.appendRow([g ? g.name : (name || ''), "'" + (g ? g.phone : local), g ? g.rel : 'לא ברשימה', g ? g.invited : 1]);
-    row = sh.getLastRow();
+    const sameName = g && idx.noPhoneByName[nameKey_(g.name)];
+    if (sameName) { // יש כבר שורה לאורח בלי טלפון: משלימים בה את הטלפון במקום שורה כפולה
+      sh.getRange(sameName, 2).setValue("'" + g.phone);
+      row = sameName;
+    } else {
+      const local = key.startsWith('972') ? '0' + key.slice(3) : key;
+      sh.appendRow([g ? g.name : (name || ''), "'" + (g ? g.phone : local), g ? g.rel : 'לא ברשימה', g ? g.invited : 1]);
+      row = sh.getLastRow();
+    }
   }
 
   const fields = Object.assign({}, fieldsIn, { 'עודכן': new Date() });
@@ -152,18 +158,22 @@ function statusSheet_() {
 }
 
 function statusIndex_(sh) {
-  const byPhone = {};
-  if (sh.getLastRow() < 2) return { byPhone };
+  const byPhone = {}, noPhoneByName = {};
+  if (sh.getLastRow() < 2) return { byPhone, noPhoneByName };
   const values = sh.getRange(2, 1, sh.getLastRow() - 1, STATUS_TAB_HEADERS.length).getValues();
   values.forEach((r, i) => {
     const key = norm_(r[1]);
+    const name = nameKey_(r[0]);
+    if (!key && name && !noPhoneByName[name]) noPhoneByName[name] = i + 2; // שורה שהוספתם ידנית בלי טלפון
     if (!key || byPhone[key]) return;
     const v = {};
     STATUS_TAB_HEADERS.forEach((h, j) => { v[h] = r[j] instanceof Date ? r[j].toISOString() : String(r[j]).trim(); });
     byPhone[key] = { row: i + 2, values: v };
   });
-  return { byPhone };
+  return { byPhone, noPhoneByName };
 }
+
+function nameKey_(n) { return String(n || '').replace(/\s+/g, ' ').trim(); }
 
 function norm_(p) {
   let d = String(p || '').replace(/\D/g, '');
@@ -189,6 +199,8 @@ function testGuests() {
     const k = norm_(g.phone);
     if (idx.byPhone[k] || seen[k]) return;
     seen[k] = true;
+    const sameName = idx.noPhoneByName[nameKey_(g.name)];
+    if (sameName) { sh.getRange(sameName, 2).setValue("'" + g.phone); delete idx.noPhoneByName[nameKey_(g.name)]; return; }
     rows.push([g.name, "'" + g.phone, g.rel, g.invited].concat(STATUS_HEADERS.map(() => '')));
   });
   if (rows.length) sh.getRange(sh.getLastRow() + 1, 1, rows.length, STATUS_TAB_HEADERS.length).setValues(rows);
